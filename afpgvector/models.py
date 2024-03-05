@@ -12,7 +12,7 @@ class Document(models.Model):
         db_table = "documents"
         ordering = ("-created_at",)
 
-    id = models.IntegerField(primary_key=True, editable=False)
+    id = models.BigAutoField(primary_key=True, editable=False)
     content = models.TextField()
     metadata = models.JSONField()
     embedding = VectorField(dimensions=1536)
