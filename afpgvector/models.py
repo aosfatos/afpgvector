@@ -11,6 +11,8 @@ class Document(models.Model):
         app_label = "afpgvector"
         db_table = "documents"
         ordering = ("-created_at",)
+        verbose_name = "LLM Vector"
+        verbose_name_plural = "LLM Vectors"
 
     id = models.BigAutoField(primary_key=True, editable=False)
     content = models.TextField()
