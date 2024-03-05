@@ -1,7 +1,7 @@
 from hashlib import md5
 
-from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from pgvector.django import CosineDistance, VectorField
 
 
@@ -17,7 +17,7 @@ class Document(models.Model):
     metadata = models.JSONField()
     embedding = VectorField(dimensions=1536)
     hash_id = models.CharField(max_length=32)
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(default=timezone.now())
 
     def __str__(self):
         return self.metadata.get("title")
