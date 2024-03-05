@@ -45,6 +45,6 @@ class Document(models.Model):
     @classmethod
     def delete_from_url(cls, url):
         documents = cls.objects.using("vector").filter(metadata__url=url)
-        print(f"Deleting {documents.count()}...")
+        print(f"Deleting {documents.count()} embedding vectors...")
         documents.delete()
         print("Done!")
