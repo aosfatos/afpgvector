@@ -1,4 +1,7 @@
+from datetime import datetime
+
 from django.contrib import admin
+from django.utils.html import format_html
 
 from afpgvector.models import Document
 
@@ -6,16 +9,22 @@ from afpgvector.models import Document
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
     using = "vector"
-    list_display = ("get_title", "get_url", "hash_id", "get_pd", "created_at")
+    search_fields = ("metadata__title", "content")
+    list_display = ("get_title", "get_url", "hash_id", "get_pd")
+    readonly_fields = ("content", "metadata", "embedding", "hash_id", "created_at")
 
     def get_title(self, obj):
         return obj.metadata.get("title")
 
     def get_url(self, obj):
-        return obj.metadata.get("url")
+        url = obj.metadata.get("url")
+        if url:
+            return format_html(f"<a href='{url}' target=_blank>{url}</a>")
 
     def get_pd(self, obj):
-        return obj.metadata.get("pd")
+        pd = obj.metadata.get("pd")
+        if pd:
+            return datetime.strptime(pd, "%Y-%m-%dT%H:%M:%S%z")
 
     def save_model(self, request, obj, form, change):
         # Tell Django to save objects to the 'other' database.

@@ -1,0 +1,6 @@
+-r requirements.txt
+
+dj-database-url==2.1.0
+pytest==8.0.2
+psycopg2-binary==2.9.9
+pytest-django==4.8.0

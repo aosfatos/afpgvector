@@ -2,6 +2,7 @@ from hashlib import md5
 
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from pgvector.django import CosineDistance, VectorField
 
 
@@ -11,8 +12,8 @@ class Document(models.Model):
         app_label = "afpgvector"
         db_table = "documents"
         ordering = ("-created_at",)
-        verbose_name = "LLM Vector"
-        verbose_name_plural = "LLM Vectors"
+        verbose_name = _("LLM vector")
+        verbose_name_plural = _("LLM vectors")
 
     id = models.BigAutoField(primary_key=True, editable=False)
     content = models.TextField()
@@ -26,11 +27,13 @@ class Document(models.Model):
 
     @classmethod
     def query(cls, embedding, n_results, score_threshold):
-        print("Querying Postgres Vector DB...")
+        str_now = timezone.now().isoformat()
+        print(f"Querying Postgres Vector DB for documents older than {str_now}...")
         return cls.objects.using("vector").annotate(
             distance=CosineDistance("embedding", embedding)
         ).defer("embedding", "hash_id", "created_at").filter(
-            distance__lte=score_threshold
+            models.Q(metadata__pd__isnull=True) | models.Q(metadata__pd__lte=str_now),
+            distance__lte=score_threshold,
         ).order_by("distance")[:n_results]
 
     @classmethod
