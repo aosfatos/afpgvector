@@ -1,7 +1,9 @@
 from datetime import datetime
 
 from django.contrib import admin
+from django.utils import timezone
 from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
 
 from afpgvector.models import Document
 
@@ -10,7 +12,7 @@ from afpgvector.models import Document
 class DocumentAdmin(admin.ModelAdmin):
     using = "vector"
     search_fields = ("metadata__title", "content")
-    list_display = ("get_title", "get_url", "hash_id", "get_pd")
+    list_display = ("get_title", "get_url", "is_available", "get_pd", "created_at")
     readonly_fields = ("content", "metadata", "embedding", "hash_id", "created_at")
 
     def get_title(self, obj):
@@ -25,6 +27,15 @@ class DocumentAdmin(admin.ModelAdmin):
         pd = obj.metadata.get("pd")
         if pd:
             return datetime.strptime(pd, "%Y-%m-%dT%H:%M:%S%z")
+
+    def is_available(self, obj):
+        available = True
+        str_now = timezone.now().isoformat()
+        pd = obj.metadata.get("pd")
+        if pd:
+            available = pd <= str_now
+
+        return available
 
     def save_model(self, request, obj, form, change):
         # Tell Django to save objects to the 'other' database.
@@ -52,6 +63,8 @@ class DocumentAdmin(admin.ModelAdmin):
             db_field, request, using=self.using, **kwargs
         )
 
-    get_title.short_description = "Title"
+    get_title.short_description = _("Title")
     get_url.short_description = "URL"
-    get_pd.short_description = "Publication date"
+    get_pd.short_description = _("Publication date")
+    is_available.short_description = _("Available for LLM")
+    is_available.boolean = True
